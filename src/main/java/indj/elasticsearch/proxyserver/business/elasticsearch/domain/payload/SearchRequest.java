@@ -1,19 +1,18 @@
 package indj.elasticsearch.proxyserver.business.elasticsearch.domain.payload;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import org.springframework.util.MultiValueMap;
 
-@Data
+import java.util.Map;
+
+@Getter
 @ToString
+@RequiredArgsConstructor
 public class SearchRequest {
-
-    @JsonProperty("searchIndex")
-    private String searchIndex;
 
     private String id;
 
-    private MultiValueMap<String, String> params;
+    private Map<String, String> params;
 
 }
