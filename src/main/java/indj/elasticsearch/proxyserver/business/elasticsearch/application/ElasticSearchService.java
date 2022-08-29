@@ -1,37 +1,51 @@
 package indj.elasticsearch.proxyserver.business.elasticsearch.application;
 
 import indj.elasticsearch.proxyserver.business.elasticsearch.domain.payload.SearchRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
+
+import java.nio.charset.Charset;
+
+import static indj.elasticsearch.proxyserver.business.elasticsearch.domain.ProxyServerConstants.BASIC_PATH;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class ElasticSearchService {
 
-    private final WebClient webClient = WebClient.create();
+    @Autowired
+    private RestTemplate restTemplate;
 
-    public boolean searchData(SearchRequest request) {
-        System.err.println(request.getParams());
-        System.err.println(request.getSearchIndex());
-        System.err.println(request.getId());
+    //@ResponseBody
+    public ResponseEntity<String> searchData(SearchRequest request, String searchIndex) {
+        HttpHeaders headers = new HttpHeaders();
 
-//
-//        System.err.println(jsonString);
-//
-////        Mono<String> result = WebClient.create()
-////                .method(HttpMethod.GET)
-////                .uri("http://15.165.50.8:9200/" + param.get("searchIndex") + "/_search/template")
-////                .accept(MediaType.APPLICATION_JSON)
-////                .body(BodyInserters.fromValue(jsonString))
-////                .retrieve()
-////                .bodyToMono(String.class);
-//
-//        System.err.println(result);
-//        return result;
-        return true;
+        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
+        String jsonString = makeJsonStringByRequest(request);
+
+        HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);
+
+        String url = String.format(BASIC_PATH, searchIndex);
+        String result = restTemplate.postForObject(url, entity, String.class);
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+
+        return new ResponseEntity<>(result, httpHeaders, HttpStatus.OK);
+    }
+
+    private String makeJsonStringByRequest(SearchRequest request) {
+        return "{" + "\n" +
+                "\"id\": " + "\"" + request.getId() + "\"," + "\n" +
+                "\"params\": " + "\n" +
+                "{" + "\n" +
+                "\"q\": " + "\"" + request.getParams().get("q") + "\"," + "\n" +
+                "\"size\": " + "\"" + request.getParams().get("size") + "\"," + "\n" +
+                "\"from\": " + "\"" + request.getParams().get("from") + "\"" + "\n" +
+                "}" + "\n" +
+                "}";
     }
 
 }
