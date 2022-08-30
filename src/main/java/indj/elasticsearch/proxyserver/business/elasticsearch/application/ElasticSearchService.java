@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 
-import static indj.elasticsearch.proxyserver.business.elasticsearch.domain.ProxyServerConstants.BASIC_PATH;
+import static indj.elasticsearch.proxyserver.business.elasticsearch.domain.ProxyServerConstants.*;
 
 @Service
 @Slf4j
@@ -18,20 +18,18 @@ public class ElasticSearchService {
     @Autowired
     private RestTemplate restTemplate;
 
-    //@ResponseBody
     public ResponseEntity<String> searchData(SearchRequest request, String searchIndex) {
         HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON);
 
-        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
         String jsonString = makeJsonStringByRequest(request);
-
         HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);
 
         String url = String.format(BASIC_PATH, searchIndex);
         String result = restTemplate.postForObject(url, entity, String.class);
 
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(new MediaType("application", "json", StandardCharsets.UTF_8));
+        httpHeaders.setContentType(new MediaType(APPLICATION, JSON, StandardCharsets.UTF_8));
 
         return new ResponseEntity<>(result, httpHeaders, HttpStatus.OK);
     }
