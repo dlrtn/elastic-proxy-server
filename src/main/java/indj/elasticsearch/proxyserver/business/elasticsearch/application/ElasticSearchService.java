@@ -7,7 +7,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import static indj.elasticsearch.proxyserver.business.elasticsearch.domain.ProxyServerConstants.BASIC_PATH;
 
@@ -31,7 +31,7 @@ public class ElasticSearchService {
         String result = restTemplate.postForObject(url, entity, String.class);
 
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+        httpHeaders.setContentType(new MediaType("application", "json", StandardCharsets.UTF_8));
 
         return new ResponseEntity<>(result, httpHeaders, HttpStatus.OK);
     }
