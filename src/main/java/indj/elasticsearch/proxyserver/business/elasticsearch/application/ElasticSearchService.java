@@ -7,7 +7,10 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.naming.directory.SearchControls;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import static indj.elasticsearch.proxyserver.business.elasticsearch.domain.ProxyServerConstants.*;
 
@@ -22,8 +25,9 @@ public class ElasticSearchService {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON);
 
-        String jsonString = makeJsonStringByRequest(request);
-        HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);
+        log.info("searchIndex : " + searchIndex + "requestBody : " + request.getParams().toString());
+
+        HttpEntity<Map<String,Object>> entity = new HttpEntity<>(makeSearchRequestBody(request), headers);
 
         String url = String.format(BASIC_PATH, searchIndex);
         String result = restTemplate.postForObject(url, entity, String.class);
@@ -34,16 +38,19 @@ public class ElasticSearchService {
         return new ResponseEntity<>(result, httpHeaders, HttpStatus.OK);
     }
 
-    private String makeJsonStringByRequest(SearchRequest request) {
-        return "{" + "\n" +
-                "\"id\": " + "\"" + request.getId() + "\"," + "\n" +
-                "\"params\": " + "\n" +
-                "{" + "\n" +
-                "\"q\": " + "\"" + request.getParams().get("q") + "\"," + "\n" +
-                "\"size\": " + "\"" + request.getParams().get("size") + "\"," + "\n" +
-                "\"from\": " + "\"" + request.getParams().get("from") + "\"" + "\n" +
-                "}" + "\n" +
-                "}";
+    private Map<String, Object> makeSearchRequestBody(SearchRequest request) {
+        Map<String, Object> requestBody = new HashMap<>();
+        Map<String, String> paramBody = new HashMap<>();
+
+        requestBody.put("id", request.getId());
+
+        paramBody.put("q", request.getParams().get("q"));
+        paramBody.put("size", request.getParams().get("size"));
+        paramBody.put("from", request.getParams().get("from"));
+        requestBody.put("params", paramBody);
+
+        return requestBody;
+
     }
 
 }
